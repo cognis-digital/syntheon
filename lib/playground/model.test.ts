@@ -127,7 +127,7 @@ describe("playground model — theme", () => {
 
 describe("playground model — blueprint + config emission", () => {
   it("tags select-group picks with a choice, multiselect without", () => {
-    let state = initialState();
+    const state = initialState();
     state.selections.integrations = ["int-slack"];
     const blueprint = toBlueprint(state);
     const auth = blueprint.features.find((f) => f.featureId === "auth-clerk");
