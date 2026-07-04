@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, userEvent } from 'vitest'
+import { describe, it, expect, vi, userEvent } from 'vitest-dom'
 import { render, screen, within } from '@testing-library/react'
 import FeatureTabs from '@/components/blocks/feature-tabs'
 
@@ -48,7 +48,7 @@ describe('FeatureTabs', () => {
   })
 
   it('handles empty items gracefully', () => {
-    render(<FeatureTabs tabs={[]} />)
+    render(<FeatureTabs title="Empty" tabs={[]} />)
     
     expect(screen.queryByRole('tab')).not.toBeInTheDocument()
   })
