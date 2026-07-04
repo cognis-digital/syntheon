@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Menu } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -52,9 +53,9 @@ export function Navbar({
     >
       <div className="container flex h-14 items-center justify-between gap-4">
         <div className="flex items-center gap-8">
-          <a href="/" className="flex items-center">
+          <Link href="/" className="flex items-center">
             {brand}
-          </a>
+          </Link>
           <nav className="hidden items-center gap-6 md:flex">
             {links.map((link) => (
               <a

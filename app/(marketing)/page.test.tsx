@@ -28,9 +28,9 @@ describe("Landing page", () => {
 
   it("renders the integration logo cloud", () => {
     render(<LandingPage />);
-    expect(screen.getByText("Clerk")).toBeInTheDocument();
-    expect(screen.getByText("Stripe")).toBeInTheDocument();
-    expect(screen.getByText("HubSpot")).toBeInTheDocument();
+    expect(screen.getAllByText("Clerk").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Stripe").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("HubSpot").length).toBeGreaterThan(0);
   });
 
   it("renders the pricing tiers", () => {

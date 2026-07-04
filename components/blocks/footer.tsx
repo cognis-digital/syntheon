@@ -1,4 +1,5 @@
 import * as React from "react";
+import Link from "next/link";
 
 import { cn } from "@/lib/utils";
 
@@ -32,9 +33,9 @@ export function Footer({
       <div className="container py-12">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-6">
           <div className="col-span-2 flex flex-col gap-3">
-            <a href="/" className="flex items-center">
+            <Link href="/" className="flex items-center">
               {brand}
-            </a>
+            </Link>
             {description && (
               <p className="max-w-xs text-sm text-muted-foreground">{description}</p>
             )}

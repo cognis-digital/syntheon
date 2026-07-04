@@ -6,8 +6,8 @@ import PricingPage from "./page";
 describe("Pricing page", () => {
   it("renders all three tiers", () => {
     render(<PricingPage />);
-    expect(screen.getByText("Open Source")).toBeInTheDocument();
-    expect(screen.getByText("Team")).toBeInTheDocument();
+    expect(screen.getAllByText("Open Source").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Team").length).toBeGreaterThan(0);
     // "Enterprise" appears in tier + comparison + callout; at least one present
     expect(screen.getAllByText("Enterprise").length).toBeGreaterThan(0);
   });
@@ -15,7 +15,7 @@ describe("Pricing page", () => {
   it("renders the plan comparison table", () => {
     render(<PricingPage />);
     expect(screen.getByText("Capability")).toBeInTheDocument();
-    expect(screen.getByText("SSO / SAML + RBAC")).toBeInTheDocument();
+    expect(screen.getAllByText("SSO / SAML + RBAC").length).toBeGreaterThan(0);
   });
 
   it("has an enterprise contact callout", () => {

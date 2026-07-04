@@ -5,16 +5,11 @@
  * fallback form. Clerk is dynamically imported only when configured so the
  * page renders without throwing when keys are absent.
  */
-import dynamic from "next/dynamic";
 import { isClerkConfigured } from "../../_components/clerk-configured";
 import { SelfHostedSignUp } from "../../_components/fallback-forms";
+import { ClerkSignUp } from "../../_components/clerk-widgets";
 
 export const metadata = { title: "Create account · Syntheon" };
-
-const ClerkSignUp = dynamic(
-  () => import("@clerk/nextjs").then((m) => m.SignUp),
-  { ssr: false },
-);
 
 const clerkAppearance = {
   variables: { colorPrimary: "hsl(262 83% 58%)", borderRadius: "0.65rem" },

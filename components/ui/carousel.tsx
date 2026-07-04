@@ -26,7 +26,8 @@ const Carousel = React.forwardRef<HTMLDivElement, CarouselProps>(
       const el = trackRef.current;
       if (!el) return;
       const amount = orientation === "horizontal" ? el.clientWidth : el.clientHeight;
-      el.scrollBy(
+      // `scrollBy` is undefined in some non-DOM environments (e.g. jsdom); guard it.
+      el.scrollBy?.(
         orientation === "horizontal"
           ? { left: dir * amount, behavior: "smooth" }
           : { top: dir * amount, behavior: "smooth" },

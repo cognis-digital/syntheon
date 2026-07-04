@@ -6,16 +6,11 @@
  * which posts to `/api/auth/waitlist` and records via `lib/auth`'s
  * `joinWaitlist`. Never throws when Clerk env is absent.
  */
-import dynamic from "next/dynamic";
 import { isClerkConfigured } from "../_components/clerk-configured";
 import { SelfHostedWaitlist } from "../_components/fallback-forms";
+import { ClerkWaitlist } from "../_components/clerk-widgets";
 
 export const metadata = { title: "Join the waitlist · Syntheon" };
-
-const ClerkWaitlist = dynamic(
-  () => import("@clerk/nextjs").then((m) => m.Waitlist),
-  { ssr: false },
-);
 
 const clerkAppearance = {
   variables: { colorPrimary: "hsl(262 83% 58%)", borderRadius: "0.65rem" },
