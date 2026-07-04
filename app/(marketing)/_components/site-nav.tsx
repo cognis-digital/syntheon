@@ -9,12 +9,12 @@ export const GITHUB_URL = "https://github.com/cognis-digital/syntheon";
 
 /** Primary marketing navigation, shared across every marketing route. */
 export const marketingLinks = [
+  { label: "Playground", href: "/playground" },
   { label: "Features", href: "/#features" },
   { label: "How it works", href: "/#engine" },
   { label: "Pricing", href: "/pricing" },
   { label: "Gallery", href: "/gallery" },
   { label: "Docs", href: "/docs" },
-  { label: "Blog", href: "/blog" },
 ];
 
 /**
