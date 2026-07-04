@@ -137,6 +137,15 @@ export function checkHubSpotStatus() {
   }
 }
 
+// Module namespace for clean exports
+const thisModule = {
+  getExampleContacts,
+  getExampleCompanies,
+  getExampleDeals,
+  checkHubSpotStatus,
+  isHubSpotConfigured,
+} as const
+
 // Re-export for convenience
 export const { 
   getExampleContacts, 
