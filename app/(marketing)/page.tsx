@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 
-import { Hero } from "@/components/blocks/hero";
 import { FeatureGrid } from "@/components/blocks/feature-grid";
 import { LogoCloud } from "@/components/blocks/logo-cloud";
 import { PricingTable } from "@/components/blocks/pricing-table";
@@ -10,7 +9,7 @@ import { Stats } from "@/components/blocks/stats";
 import { TestimonialWall } from "@/components/blocks/testimonial-wall";
 
 import { GITHUB_URL } from "./_components/site-nav";
-import { GenerationPreview } from "./_components/generation-preview";
+import { HeroShowcase } from "./_components/hero-showcase";
 import { EngineSection } from "./_components/engine-section";
 import {
   FEATURES,
@@ -29,32 +28,17 @@ export const metadata: Metadata = {
 export default function LandingPage() {
   return (
     <>
-      {/* Hero */}
-      <section className="relative w-full overflow-hidden">
+      {/* Hero — leads with the interactive playground */}
+      <section className="relative w-full overflow-hidden pb-20">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[32rem] bg-gradient-to-b from-primary/10 via-accent/5 to-transparent"
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[36rem] bg-gradient-to-b from-primary/10 via-accent/5 to-transparent"
         />
         <div
           aria-hidden
           className="pointer-events-none absolute left-1/2 top-0 -z-10 h-72 w-[48rem] -translate-x-1/2 rounded-full bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 blur-3xl"
         />
-        <Hero
-          variant="centered"
-          className="pb-8"
-          eyebrow="Open source · local-first · v0.1"
-          title={
-            <>
-              Build your app. <span className="text-primary">Own every line.</span>
-            </>
-          }
-          description="The open-source, local-AI full-stack builder. Pick your features from a menu — auth, waitlist, email, CRM, payments, scheduling, integrations — and the local model generates and debugs it until zero errors. No cloud dependency, no lock-in."
-          primaryAction={{ label: "Star on GitHub", href: GITHUB_URL }}
-          secondaryAction={{ label: "Read the docs", href: "/docs" }}
-        />
-        <div className="container -mt-2 pb-20">
-          <GenerationPreview className="mx-auto max-w-4xl" />
-        </div>
+        <HeroShowcase githubUrl={GITHUB_URL} />
       </section>
 
       {/* Integration logo cloud */}
@@ -123,9 +107,9 @@ export default function LandingPage() {
       <Cta
         variant="banner"
         title="Clone it. Run it locally. Own every line."
-        description="Syntheon is open source. Star the repo, run the menu-driven builder against your local model, and ship an app you fully control."
-        primaryAction={{ label: "Star on GitHub", href: GITHUB_URL }}
-        secondaryAction={{ label: "Read the docs", href: "/docs" }}
+        description="Syntheon is open source. Try the interactive playground, star the repo, run the menu-driven builder against your local model, and ship an app you fully control."
+        primaryAction={{ label: "Try it live", href: "/playground" }}
+        secondaryAction={{ label: "Star on GitHub", href: GITHUB_URL }}
       />
     </>
   );

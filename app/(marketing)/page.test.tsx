@@ -19,6 +19,14 @@ describe("Landing page", () => {
     expect(githubLinks.length).toBeGreaterThan(0);
   });
 
+  it("leads with a prominent link into the playground", () => {
+    render(<LandingPage />);
+    const playgroundLinks = screen
+      .getAllByRole("link")
+      .filter((el) => el.getAttribute("href") === "/playground");
+    expect(playgroundLinks.length).toBeGreaterThan(0);
+  });
+
   it("renders the feature pillars", () => {
     render(<LandingPage />);
     expect(screen.getByText("You own every line")).toBeInTheDocument();
