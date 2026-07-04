@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, userEvent } from 'vitest-dom'
-import { render, screen, within } from '@testing-library/react'
+import { describe, it, expect, vi, userEvent } from '@testing-library/dom'
+import { render, screen, within } from '@/lib/test-utils'
 import FeatureTabs from '@/components/blocks/feature-tabs'
 
 describe('FeatureTabs', () => {
