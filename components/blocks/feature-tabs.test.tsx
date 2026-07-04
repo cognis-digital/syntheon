@@ -1,5 +1,42 @@
-import { describe, it, expect, vi, userEvent } from '@testing-library/dom'
-import { render, screen, within } from '@/lib/test-utils'
+import { describe, it, expect, vi } from 'vitest'
+import { screen, within } from '@testing-library/react'
+import { render as rtlRender, cleanup } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import type { RenderOptions } from '@testing-library/react'
+
+// Extend vitest's matchers with RTL utilities
+declare module 'vitest' {
+  interface Matchers<R> {
+    toBeInTheDocument(): R
+    not.toBeInTheDocument(): R
+    toHaveAttribute(name: string, value?: unknown): R
+    toHaveClass(className: RegExp | string): R
+  }
+}
+
+// Create render utilities with proper setup
+const render = (ui: React.ReactElement, options?: RenderOptions) => {
+  const { container, ...rest } = rtlRender(ui, options)
+  return {
+    container,
+    debug: (...args) => rtlDebug(container, ...args),
+    rerender: ui => {
+      cleanup()
+      return rtlRender(ui, options)
+    },
+    unmount: () => cleanup(),
+    ...rest,
+  }
+}
+
+const rtlDebug = (container: HTMLElement, ...args: unknown[]) => {
+  console.log('Container:', container.innerHTML)
+  console.log(...args)
+}
+
+// Export for use in components
+export { render, screen, within, userEvent, cleanup, describe, it, expect, vi }
+
 import FeatureTabs from '@/components/blocks/feature-tabs'
 
 describe('FeatureTabs', () => {
