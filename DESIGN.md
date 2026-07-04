@@ -1,9 +1,9 @@
-# Cognis Studio — Design System & Generation Architecture
+# Syntheon — Design System & Generation Architecture
 
 > The open-source, local-AI full-stack web app builder. Pick your features from a menu; the
 > local model generates and debugs the code until zero errors. You own every line.
 
-This document is the single source of truth for **how Cognis Studio looks, how it is built, and
+This document is the single source of truth for **how Syntheon looks, how it is built, and
 how it generates apps**. Every contributor and every generation agent reads this first.
 
 ---
@@ -11,8 +11,8 @@ how it generates apps**. Every contributor and every generation agent reads this
 ## 1. Philosophy
 
 1. **You own the code.** Like [shadcn/ui](https://ui.shadcn.com), components are copied into your
-   project, not hidden behind an npm dependency. Studio-generated apps have no runtime dependency
-   on Studio.
+   project, not hidden behind an npm dependency. Syntheon-generated apps have no runtime dependency
+   on Syntheon.
 2. **Templates anchor quality; AI personalizes.** A curated substrate of production-grade,
    already-tested components and blocks anchors visual and structural quality. The local model
    generates *variations and glue* on top — never fragile from-scratch UI under a deadline.
@@ -56,7 +56,7 @@ contract intact — it edits values, never the semantic names.
 ## 3. Repository layout
 
 ```
-cognis-studio/
+syntheon/
 ├── app/                     # Next.js App Router (routes, layouts, route handlers)
 │   ├── (marketing)/         # landing, pricing, blog, legal
 │   ├── (auth)/              # sign-in, sign-up, waitlist
@@ -87,7 +87,7 @@ single owner. Agents add files only within their lane and never edit shared conf
 ## 4. The generation engine — how a small local model builds a large, correct app
 
 A 9B model cannot one-shot a 100k-line app. It *can* generate thousands of small, well-specified
-units correctly when each is verified and repaired. Studio orchestrates the fleet:
+units correctly when each is verified and repaired. Syntheon orchestrates the fleet:
 
 ```
 menu selections
@@ -213,7 +213,7 @@ same four gates on every push — the guarantee is enforced, not aspirational.
 
 ## 9. Non-goals & honesty
 
-- Studio does **not** claim a small local model writes flawless code unaided — correctness comes
+- Syntheon does **not** claim a small local model writes flawless code unaided — correctness comes
   from verification + iteration + a curated substrate.
 - Integrations that need paid accounts (Stripe, Clerk, Persona, Twilio, Plaid) ship as typed,
   documented adapters with env scaffolds; you bring your own keys.

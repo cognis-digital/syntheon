@@ -1,6 +1,6 @@
 <div align="center">
 
-# Cognis Studio
+# Syntheon
 
 ### Build your app. Own every line.
 
@@ -16,7 +16,7 @@ generates and debugs the code until zero errors. No cloud dependency. No lock-in
 
 ## Why
 
-Agencies and "AI app builders" rent you a black box. Cognis Studio hands you the keys: a
+Agencies and "AI app builders" rent you a black box. Syntheon hands you the keys: a
 production-grade **Next.js + TypeScript + Tailwind + shadcn/ui** codebase, composed from your menu
 selections and personalized by your **own local AI** (Ollama), then run through a real
 `typecheck → lint → test → build` loop until it's green. Everything ships as code you own and can
@@ -59,7 +59,7 @@ Airtable · Plaid — and more. Each is a typed adapter with a setup guide; brin
 
 Early and moving fast. The base scaffold builds today; the component/block library, integration
 adapters, builder TUI, and generation engine are being filled out. See [DESIGN.md](./DESIGN.md) for
-the full plan and the [issues](https://github.com/cognis-digital/cognis-studio/issues) for what's next.
+the full plan and the [issues](https://github.com/cognis-digital/syntheon/issues) for what's next.
 
 ## License
 
