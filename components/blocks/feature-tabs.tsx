@@ -193,5 +193,3 @@ export default function FeatureTabs({
     </Card>
   );
 }
-
-type { FeatureTabsProps, TabItem };
