@@ -3,6 +3,7 @@ import { screen, within } from '@testing-library/react'
 import { render as rtlRender, cleanup } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { RenderOptions } from '@testing-library/react'
+import FeatureTabs from '@/components/blocks/feature-tabs'
 
 // Extend vitest's matchers with RTL utilities
 declare module 'vitest' {
@@ -36,8 +37,6 @@ const rtlDebug = (container: HTMLElement, ...args: unknown[]) => {
 
 // Export for use in components
 export { render, screen, within, userEvent, cleanup, describe, it, expect, vi }
-
-import FeatureTabs from '@/components/blocks/feature-tabs'
 
 describe('FeatureTabs', () => {
   const mockProps = {
