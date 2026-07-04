@@ -143,6 +143,22 @@ export function NotionExample() {
     }
   }
 
+  const handleDelete = async () => {
+    if (!isConfigured() || !pageData) return
+    if (!confirm('Are you sure?')) return
+    setLoading(true)
+    try {
+      await deletePage(pageData.id)
+      setShowSuccess(true)
+      setPageData(null)
+      setTimeout(() => setShowSuccess(false), 2000)
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete page')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <motion.div 
       className="min-h-screen bg-background text-foreground"
@@ -188,3 +204,219 @@ export function NotionExample() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
+                <Settings2 className="h-4 w-4" />
+                <span>Configure</span>
+              </motion.button>
+            )}
+          </div>
+        </div>
+      </motion.header>
+
+      {/* Main content */}
+      <main className="mx-auto max-w-5xl px-6 py-8">
+        {/* Status bar */}
+        <AnimatePresence>
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6 rounded-lg border border-destructive/30 bg-destructive/10 p-4"
+            >
+              <div className="flex items-center gap-3">
+                <AlertCircle className="h-5 w-5 text-destructive" />
+                <p className="text-sm font-medium">{error}</p>
+              </div>
+            </motion.div>
+          )}
+
+          {showSuccess && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6 rounded-lg border border-success/30 bg-success/10 p-4"
+            >
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="h-5 w-5 text-success" />
+                <p className="text-sm font-medium">Operation completed successfully</p>
+              </div>
+            </motion.div>
+          )}
+
+          {loading && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="mb-6 flex items-center gap-3 rounded-lg border border-border/50 bg-muted/50 p-4"
+            >
+              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <p className="text-sm">Processing...</p>
+            </motion.div>
+          )}
+
+          {pageData && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-6 rounded-xl border border-border/50 bg-background p-6 shadow-sm"
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold">{pageData.title}</h2>
+                  <p className="text-sm text-muted-foreground mt-1">ID: {pageData.id}</p>
+                </div>
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleDelete}
+                  className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </motion.button>
+              </div>
+
+              {/* Action buttons */}
+              <div className="mt-6 flex flex-wrap gap-3">
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleFetch}
+                  disabled={loading}
+                  className="flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50"
+                >
+                  <FileText className="h-4 w-4" />
+                  Refresh
+                </motion.button>
+
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={handleCreate}
+                  disabled={loading}
+                  className="flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50"
+                >
+                  <Plus className="h-4 w-4" />
+                  Create New
+                </motion.button>
+
+                {pageData && (
+                  <>
+                    <motion.button 
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleUpdate}
+                      disabled={loading}
+                      className="flex items-center gap-2 rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50"
+                    >
+                      <Edit3 className="h-4 w-4" />
+                      Update
+                    </motion.button>
+
+                    <motion.button 
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={handleDelete}
+                      disabled={loading}
+                      className="flex items-center gap-2 rounded-lg border border-destructive/30 bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted disabled:opacity-50"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      Delete
+                    </motion.button>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {/* Empty state */}
+          {!pageData && !loading && !error && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="mb-6 rounded-xl border border-border/50 bg-background p-8 text-center shadow-sm"
+            >
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <Database className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold">No page loaded</h3>
+              <p className="mt-1 text-sm text-muted-foreground">Click "Refresh" to load a sample page, or create a new one.</p>
+            </motion.div>
+          )}
+
+          {/* Quick actions */}
+          {!pageData && !loading && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="rounded-xl border border-border/50 bg-background p-6 shadow-sm"
+            >
+              <h3 className="mb-4 text-lg font-semibold">Quick Actions</h3>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <motion.button 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleFetch}
+                  disabled={loading}
+                  className="flex flex-col items-center justify-center gap-2 rounded-lg border border-border bg-background p-4 text-sm transition-colors hover:bg-muted disabled:opacity-50"
+                >
+                  <FileText className="h-6 w-6" />
+                  Load Sample Page
+                </motion.button>
+
+                <motion.button 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={handleCreate}
+                  disabled={loading}
+                  className="flex flex-col items-center justify-center gap-2 rounded-lg border border-border bg-background p-4 text-sm transition-colors hover:bg-muted disabled:opacity-50"
+                >
+                  <Plus className="h-6 w-6" />
+                  Create New Page
+                </motion.button>
+
+                {isConfigured() && (
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={handleFetch}
+                    disabled={loading}
+                    className="flex flex-col items-center justify-center gap-2 rounded-lg border border-border bg-background p-4 text-sm transition-colors hover:bg-muted disabled:opacity-50"
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                    Explore Workspace
+                  </motion.button>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Footer info */}
+        <motion.footer 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="mt-8 rounded-lg border border-border/50 bg-muted/30 p-4 text-center"
+        >
+          <p className="text-sm text-muted-foreground">
+            {isConfigured() 
+              ? 'Connected to Notion workspace' 
+              : 'Not connected. Click "Configure" in the header to set up your API keys.'}
+          </p>
+        </motion.footer>
+      </main>
+
+      {/* Floating action button for mobile */}
+      <AnimatePresence>
+        {isConfigured() && !pageData && (
+          <motion.button 
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            whileHover={{ scale: 1.1 }}
