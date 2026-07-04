@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "name": "acme-marketing",
+  "projectType": "marketing",
+  "features": [
+    { "featureId": "page-landing" },
+    { "featureId": "page-pricing" },
+    { "featureId": "page-blog" },
+    { "featureId": "sched-calendly", "choice": "calendly" },
+    { "featureId": "email-resend", "choice": "resend" },
+    { "featureId": "int-posthog" }
+  ],
+  "theme": {
+    "brandColor": "271 91% 65%",
+    "radius": "0.75rem",
+    "font": "geist",
+    "darkMode": true
+  },
+  "cloudEscalation": false
+}

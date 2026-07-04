@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "name": "acme-saas",
+  "projectType": "saas",
+  "features": [
+    { "featureId": "page-landing" },
+    { "featureId": "page-pricing" },
+    { "featureId": "page-dashboard" },
+    { "featureId": "page-settings" },
+    { "featureId": "auth-clerk", "choice": "clerk" },
+    { "featureId": "pay-stripe", "choice": "stripe" },
+    { "featureId": "pay-stripe-link", "choice": "stripe-link" },
+    { "featureId": "email-resend", "choice": "resend" },
+    { "featureId": "crm-hubspot", "choice": "hubspot" },
+    { "featureId": "ai-claude", "choice": "claude" },
+    { "featureId": "int-posthog" },
+    { "featureId": "int-slack" }
+  ],
+  "theme": {
+    "brandColor": "262 83% 58%",
+    "radius": "0.65rem",
+    "font": "inter",
+    "darkMode": true
+  },
+  "cloudEscalation": false
+}

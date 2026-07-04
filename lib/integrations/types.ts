@@ -1,5 +1,5 @@
 /**
- * Shared contracts for Cognis Studio integration adapters.
+ * Shared contracts for Syntheon integration adapters.
  *
  * Every adapter lives in `lib/integrations/<name>/` and exports:
  *   - a client factory (or typed methods bound to env),
