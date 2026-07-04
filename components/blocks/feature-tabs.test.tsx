@@ -9,7 +9,7 @@ import FeatureTabs from '@/components/blocks/feature-tabs'
 declare module 'vitest' {
   interface Matchers<R> {
     toBeInTheDocument(): R
-    not.toBeInTheDocument(): R
+    notToBeInTheDocument(): R
     toHaveAttribute(name: string, value?: unknown): R
     toHaveClass(className: RegExp | string): R
   }
