@@ -16,6 +16,11 @@ is green as-is.
 | `@radix-ui/react-context-menu` | `context-menu` | built on installed `@radix-ui/react-menu` |
 | `react-day-picker` | `calendar` / date-picker | self-contained native month grid |
 | `vaul` | `drawer` | built on installed `@radix-ui/react-dialog` (bottom sheet) |
+| `@radix-ui/react-hover-card` | `hover-card` | built on installed `@radix-ui/react-popover` |
+| `@radix-ui/react-toggle` / `@radix-ui/react-toggle-group` | `toggle`, `toggle-group` | native `aria-pressed` buttons + context |
+| `@radix-ui/react-aspect-ratio` | `aspect-ratio` | native CSS `aspect-ratio` |
+| `embla-carousel-react` | `carousel` | native scroll-snap track + prev/next |
+| `@tanstack/react-table` | `data-table` | native sort/select over the table primitives |
 
 All substitutes keep the same prop surface and semantic class tokens, so swapping to the upstream
 package later is a drop-in change confined to the single primitive file.
@@ -76,3 +81,42 @@ NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
 # --- Data linking (Plaid env) ---
 PLAID_ENV=sandbox
 ```
+
+---
+
+## Auth / CRM / Email lane (`lib/auth`, `lib/crm`, `lib/email`, `app/(auth)`)
+
+### Packages: none needed
+
+Zero new dependencies. Everything ships against already-installed deps
+(`@clerk/nextjs`, `resend`, `googleapis`) or Node built-ins. The self-hosted
+auth store uses **`node:sqlite`** (Node 22.5+/24, no native build) with a
+transparent in-memory fallback when unavailable, and **`node:crypto`**
+(`scrypt`) for password hashing — both server-only and guarded so the client
+bundle and tests never touch them.
+
+### Cross-lane wiring notes (for the integration owner)
+
+- **Middleware:** `lib/auth/middleware.ts` exports framework-agnostic
+  `protect()` / `isPublicPath()`. The app's root `middleware.ts` (app lane)
+  should call `clerkMiddleware()` when Clerk is configured, else run the
+  self-hosted decision (`protect(path, isAuthenticated)`).
+- **Self-hosted sessions:** in a server context, wire the cookie resolver once:
+  `setCookieResolver(() => cookies())` from `lib/auth/adapters/self-hosted`.
+  Without it, sessions resolve anonymous (no throw).
+- **Auth route handlers:** the fallback forms in `app/(auth)/_components`
+  POST to `/api/auth/sign-in|sign-up|waitlist` — those handlers are the
+  app/api lane's to add (call `store.authenticate/createUser`,
+  `writeSessionToken`, and `joinWaitlist`).
+- **Signup → CRM → email:** call `crm.syncSignup(contact, "signup"|"waitlist")`
+  on sign-up; `lib/auth`'s `onWaitlistJoin` hook can drive
+  `crm.syncSignup(..., "waitlist")` + an `email` welcome-drip enrollment.
+- **ClerkProvider:** `app/layout.tsx` (shared config, not mine to edit) should
+  wrap children in `<ClerkProvider>` only when Clerk is configured. The auth
+  pages guard on config and fall back to self-hosted forms otherwise.
+
+### Env vars used (all already in `.env.example`)
+
+`NEXT_PUBLIC_CLERK_*`, `CLERK_SECRET_KEY`, `RESEND_API_KEY`, `EMAIL_FROM`,
+`GMAIL_CLIENT_ID/SECRET/REFRESH_TOKEN`, `HUBSPOT_ACCESS_TOKEN`, `DATABASE_URL`.
+No new env vars required.

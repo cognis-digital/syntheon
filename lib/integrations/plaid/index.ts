@@ -56,7 +56,7 @@ export async function createLinkToken(
 ): Promise<{ linkToken: string; expiration: string }> {
   const res = await api<{ link_token: string; expiration: string }>("/link/token/create", {
     user: { client_user_id: opts.userId },
-    client_name: opts.clientName ?? "Cognis Studio",
+    client_name: opts.clientName ?? "Syntheon",
     products: opts.products ?? ["auth", "transactions"],
     country_codes: opts.countryCodes ?? ["US"],
     language: opts.language ?? "en",

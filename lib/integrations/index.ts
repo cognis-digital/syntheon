@@ -1,5 +1,5 @@
 /**
- * Integration registry for Cognis Studio.
+ * Integration registry for Syntheon.
  *
  * Every adapter lives in `lib/integrations/<name>/` and exports an
  * `isConfigured()` guard plus its `<NAME>_ENV` var list. This module
