@@ -12,6 +12,12 @@ export default defineConfig({
     exclude: ["node_modules", ".next", "studio/templates/**"],
   },
   resolve: {
-    alias: { "@": resolve(__dirname, ".") },
+    alias: {
+      "@": resolve(__dirname, "."),
+      // `server-only` is a runtime guard that throws when imported outside a
+      // Server Component. Under vitest (node/jsdom) we alias it to its no-op
+      // stub so server modules can be unit-tested directly.
+      "server-only": resolve(__dirname, "node_modules/server-only/empty.js"),
+    },
   },
 });

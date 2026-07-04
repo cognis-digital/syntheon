@@ -12,6 +12,7 @@ export const marketingLinks = [
   { label: "Features", href: "/#features" },
   { label: "How it works", href: "/#engine" },
   { label: "Pricing", href: "/pricing" },
+  { label: "Gallery", href: "/gallery" },
   { label: "Docs", href: "/docs" },
   { label: "Blog", href: "/blog" },
 ];
