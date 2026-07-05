@@ -63,6 +63,22 @@ npm run dev         # your app is running at http://localhost:3000
 engine then builds each piece and verifies it before accepting it. Prefer to skip the menu?
 `npm run studio -- --yes` uses sensible defaults.
 
+### One-command setup (all platforms)
+
+**Prerequisite:** Node ≥ 20. Optional: [Ollama](https://ollama.com) for local generation.
+
+| Platform | Setup |
+|---|---|
+| **macOS / Linux** | `./install.sh` |
+| **Windows (PowerShell)** | `powershell -ExecutionPolicy Bypass -File .\install.ps1` |
+| **make** | `make install` · `make dev` · `make build` · `make studio` |
+| **Docker** | `docker build -t syntheon . && docker run -p 3000:3000 syntheon` |
+
+The installers check your Node version, run `npm install`, seed `.env.local` from `.env.example`, and
+detect Ollama. Syntheon is a standard Next.js app — it runs anywhere Node runs (Windows, macOS, Linux,
+containers); the generation engine talks to a local Ollama endpoint (`OLLAMA_BASE_URL`, default
+`http://localhost:11434`).
+
 **Requirements:** Node ≥ 20 and [Ollama](https://ollama.com) with a coding model (e.g. a Qwen/Code
 model) and a reasoning model. Cloud models (Claude, OpenAI) are optional accelerators — never required.
 
