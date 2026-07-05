@@ -195,6 +195,75 @@ function uniqueOrdered(items: string[]): string[] {
 }
 
 /**
+ * Resolve the plan for adding ONE feature to an existing app (`studio add`).
+ *
+ * Produces a {@link BuildPlan} containing only the units the new feature
+ * introduces — its own units plus any component/required-feature units — with
+ * everything already present excluded. When an `existing` blueprint is given,
+ * the addition is diffed against it (so shared units like `lib/email/sequences.ts`
+ * or an existing `app/api/ai/chat/route.ts` aren't regenerated). Otherwise the
+ * feature is resolved against the always-present core so the app shell isn't
+ * regenerated.
+ *
+ * Throws if the feature id is unknown. The returned plan carries a synthetic
+ * blueprint (single selection) so it flows through the existing engine unchanged.
+ */
+export function resolveFeatureAddition(
+  featureId: string,
+  existing?: BuildBlueprint,
+): BuildPlan {
+  const feature = getFeature(featureId);
+  if (!feature) {
+    throw new Error(
+      `Unknown feature "${featureId}". Run \`studio add --list\` to see available features.`,
+    );
+  }
+
+  const base: BuildBlueprint = existing ?? {
+    version: 1,
+    name: "my-syntheon-app",
+    projectType: "saas",
+    features: [],
+    theme: {
+      brandColor: "262 83% 58%",
+      radius: "0.65rem",
+      font: "inter",
+      darkMode: true,
+    },
+  };
+
+  const alreadySelected = base.features.some((f) => f.featureId === featureId);
+
+  // Plan the app WITH and WITHOUT the new feature; the difference is the work.
+  const withFeature = resolvePlan({
+    ...base,
+    features: alreadySelected
+      ? base.features
+      : [...base.features, { featureId }],
+  });
+  const without = resolvePlan(base);
+  const existingPaths = new Set(without.units.map((u) => u.path));
+  const existingEnv = new Set(without.env);
+  const existingIntegrations = new Set(without.integrations);
+
+  const units = withFeature.units
+    .filter((u) => !existingPaths.has(u.path))
+    .map((u, i) => ({ ...u, order: i }));
+  const env = withFeature.env.filter((e) => !existingEnv.has(e));
+  const integrations = withFeature.integrations.filter(
+    (i) => !existingIntegrations.has(i),
+  );
+
+  const blueprint: BuildBlueprint = {
+    ...base,
+    name: `${base.name} + ${feature.label}`,
+    features: [{ featureId }],
+  };
+
+  return { blueprint, units, env, integrations };
+}
+
+/**
  * Registry integrity check — verifies no feature references a component or
  * integration that does not exist, and no `requires` points at a missing
  * feature. Returns the list of problems (empty = healthy). Used by tests and
