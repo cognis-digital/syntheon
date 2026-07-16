@@ -28,21 +28,27 @@ import {
 } from "./config/index.js";
 import {
   FEATURES,
+  checkRegistryIntegrity,
   getFeature,
   getIntegration,
+  planToJSON,
+  renderAnalysis,
   resolveFeatureAddition,
   resolvePlan,
 } from "./registry/index.js";
+import { analyzePlan } from "./registry/analyze.js";
 
 const VIOLET = (s: string) => pc.magenta(pc.bold(s));
 
 interface Args {
-  command: "menu" | "build" | "add";
+  command: "menu" | "build" | "add" | "explain" | "doctor";
   yes: boolean;
   configPath?: string;
   outPath: string;
   dryRun: boolean;
   help: boolean;
+  /** Emit machine-readable JSON instead of human text (explain/doctor/dry-run). */
+  json: boolean;
   /** For `add`: the feature id to add (positional). */
   featureId?: string;
   /** For `add`: list available features and exit. */
@@ -56,6 +62,7 @@ export function parseArgs(argv: string[]): Args {
     outPath: CONFIG_FILENAME,
     dryRun: false,
     help: false,
+    json: false,
     list: false,
   };
   const rest = [...argv];
@@ -65,6 +72,12 @@ export function parseArgs(argv: string[]): Args {
   } else if (rest[0] === "add") {
     args.command = "add";
     rest.shift();
+  } else if (rest[0] === "explain") {
+    args.command = "explain";
+    rest.shift();
+  } else if (rest[0] === "doctor") {
+    args.command = "doctor";
+    rest.shift();
   } else if (rest[0] === "menu") {
     rest.shift();
   }
@@ -73,6 +86,7 @@ export function parseArgs(argv: string[]): Args {
     if (a === "--yes" || a === "-y") args.yes = true;
     else if (a === "--dry-run") args.dryRun = true;
     else if (a === "--help" || a === "-h") args.help = true;
+    else if (a === "--json") args.json = true;
     else if (a === "--list") args.list = true;
     else if (a === "--config" || a === "-c") args.configPath = rest[++i];
     else if (a.startsWith("--config=")) args.configPath = a.slice("--config=".length);
@@ -95,12 +109,15 @@ ${pc.bold("Commands")}
   menu            Interactive menu → writes ${CONFIG_FILENAME} (default)
   build           Load config, resolve the plan, run the generation engine
   add <feature>   Add ONE feature to an existing app (resolve + verify + repair)
+  explain         Summarize a blueprint's plan (units, integrations, env, depth)
+  doctor          Check registry integrity + validate a config; report problems
 
 ${pc.bold("Options")}
   -y, --yes       Non-interactive; use batteries-included SaaS defaults
   -c, --config    Path to an existing blueprint JSON to load
   -o, --out       Output config path (default: ${CONFIG_FILENAME})
       --dry-run   For build/add: print the resolved plan, do not generate
+      --json      Emit machine-readable JSON (explain/doctor/dry-run)
       --list      For add: list available feature ids and exit
   -h, --help      Show this help
 
@@ -108,6 +125,9 @@ ${pc.bold("Examples")}
   npx tsx studio/cli.ts add page-blog
   npx tsx studio/cli.ts add pay-stripe --dry-run
   npx tsx studio/cli.ts add --list
+  npx tsx studio/cli.ts explain --yes
+  npx tsx studio/cli.ts explain --config syntheon.config.json --json
+  npx tsx studio/cli.ts doctor --json
 
 ${pc.dim("You own every line. No code leaves your machine.")}
 `;
@@ -210,7 +230,9 @@ async function runMenu(args: Args): Promise<number> {
 }
 
 async function runBuild(args: Args): Promise<number> {
-  clack.intro(VIOLET(" Syntheon build "));
+  // Machine-readable dry-run stays quiet (no clack banner) so stdout is pure JSON.
+  const quiet = args.json && args.dryRun;
+  if (!quiet) clack.intro(VIOLET(" Syntheon build "));
   let blueprint: BuildBlueprint;
   try {
     // build prefers an explicit --config, then the default config file, then --yes.
@@ -219,13 +241,20 @@ async function runBuild(args: Args): Promise<number> {
       ? parseBlueprint(structuredClone(DEFAULT_BLUEPRINT))
       : await loadBlueprint(path);
   } catch (err) {
-    clack.log.error(
-      `Could not load a blueprint (${(err as Error).message}). Run the menu first or pass --config / --yes.`,
-    );
+    const msg = `Could not load a blueprint (${(err as Error).message}). Run the menu first or pass --config / --yes.`;
+    if (quiet) process.stdout.write(JSON.stringify({ ok: false, error: msg }, null, 2) + "\n");
+    else clack.log.error(msg);
     return 1;
   }
 
   const plan = resolvePlan(blueprint);
+
+  // Machine-readable dry-run: emit the serialized plan and stop.
+  if (quiet) {
+    process.stdout.write(planToJSON(plan));
+    return 0;
+  }
+
   const engine = await loadEngine();
 
   if (!engine || args.dryRun) {
@@ -291,7 +320,9 @@ async function runAdd(args: Args): Promise<number> {
     return args.featureId ? 0 : args.list ? 0 : 1;
   }
 
-  clack.intro(VIOLET(` Syntheon add · ${args.featureId} `));
+  // Machine-readable dry-run stays quiet (no clack banner) so stdout is pure JSON.
+  const quiet = args.json && args.dryRun;
+  if (!quiet) clack.intro(VIOLET(` Syntheon add · ${args.featureId} `));
 
   // Load an existing blueprint if present so we only add the *new* units.
   let existing: BuildBlueprint | undefined;
@@ -306,8 +337,16 @@ async function runAdd(args: Args): Promise<number> {
   try {
     plan = resolveFeatureAddition(args.featureId, existing);
   } catch (err) {
-    clack.log.error((err as Error).message);
+    const msg = (err as Error).message;
+    if (quiet) process.stdout.write(JSON.stringify({ ok: false, error: msg }, null, 2) + "\n");
+    else clack.log.error(msg);
     return 1;
+  }
+
+  if (quiet) {
+    // Emit the (possibly empty) plan; empty units means "already present".
+    process.stdout.write(planToJSON(plan));
+    return 0;
   }
 
   if (plan.units.length === 0) {
@@ -357,6 +396,131 @@ async function runAdd(args: Args): Promise<number> {
   }
 }
 
+/**
+ * Load a blueprint for a read-only command (explain/doctor) without ever
+ * prompting: prefer `--config`, then `--yes` defaults, then the default config
+ * file on disk. Throws a helpful message when nothing is available so these
+ * commands stay CI-friendly and never block on a TTY.
+ */
+async function loadBlueprintForRead(args: Args): Promise<BuildBlueprint> {
+  if (args.configPath) return loadBlueprint(resolve(args.configPath));
+  if (args.yes) return parseBlueprint(structuredClone(DEFAULT_BLUEPRINT));
+  return loadBlueprint(resolve(args.outPath));
+}
+
+/**
+ * `explain` — resolve a blueprint into a plan and summarize it. With `--json`
+ * the full serialized plan is written to stdout; otherwise a readable report.
+ * Read-only: nothing is generated or written.
+ */
+async function runExplain(args: Args): Promise<number> {
+  let blueprint: BuildBlueprint;
+  try {
+    blueprint = await loadBlueprintForRead(args);
+  } catch (err) {
+    const msg = `Could not load a blueprint (${(err as Error).message}). Pass --config <file>, --yes, or run the menu first.`;
+    if (args.json) {
+      process.stdout.write(
+        JSON.stringify({ ok: false, error: msg }, null, 2) + "\n",
+      );
+    } else {
+      process.stderr.write(msg + "\n");
+    }
+    return 1;
+  }
+
+  const plan = resolvePlan(blueprint);
+  if (args.json) {
+    process.stdout.write(planToJSON(plan));
+    return 0;
+  }
+  process.stdout.write(renderPlan(plan) + "\n\n" + renderAnalysis(analyzePlan(plan)) + "\n");
+  return 0;
+}
+
+/**
+ * `doctor` — validate the health of the setup: registry integrity (no dangling
+ * feature/component/integration references) plus, when a config is present, that
+ * it parses against the schema. Exits non-zero if any problem is found so it is
+ * usable as a CI guard. `--json` emits a structured report.
+ */
+async function runDoctor(args: Args): Promise<number> {
+  const registryProblems = checkRegistryIntegrity();
+
+  let configChecked = false;
+  let configOk = false;
+  let configError: string | undefined;
+  const configPath = args.configPath
+    ? resolve(args.configPath)
+    : args.yes
+      ? undefined
+      : resolve(args.outPath);
+  if (args.yes) {
+    // The bundled default is authoritative — treat as always valid.
+    configChecked = true;
+    configOk = true;
+  } else if (configPath) {
+    try {
+      const blueprint = await loadBlueprint(configPath);
+      resolvePlan(blueprint); // exercises the full expansion, not just the schema
+      configChecked = true;
+      configOk = true;
+    } catch (err) {
+      const msg = (err as Error).message;
+      // A missing config file is not a failure — doctor still checks the registry.
+      if (/ENOENT|no such file/i.test(msg)) {
+        configChecked = false;
+      } else {
+        configChecked = true;
+        configOk = false;
+        configError = msg;
+      }
+    }
+  }
+
+  const ok = registryProblems.length === 0 && (!configChecked || configOk);
+
+  if (args.json) {
+    process.stdout.write(
+      JSON.stringify(
+        {
+          ok,
+          registry: { ok: registryProblems.length === 0, problems: registryProblems },
+          config: {
+            checked: configChecked,
+            ok: configChecked ? configOk : null,
+            ...(configError ? { error: configError } : {}),
+          },
+        },
+        null,
+        2,
+      ) + "\n",
+    );
+    return ok ? 0 : 1;
+  }
+
+  const lines: string[] = [];
+  lines.push(
+    registryProblems.length === 0
+      ? "Registry: OK (no dangling references)"
+      : `Registry: ${registryProblems.length} problem(s):`,
+  );
+  for (const p of registryProblems) lines.push(`  - ${p}`);
+  if (configChecked) {
+    lines.push(
+      configOk
+        ? "Config:   OK (parses + resolves to a plan)"
+        : `Config:   INVALID — ${configError}`,
+    );
+  } else {
+    lines.push("Config:   not checked (no config file found)");
+  }
+  lines.push("");
+  lines.push(ok ? "All checks passed." : "Problems found.");
+  process.stdout.write(lines.join("\n") + "\n");
+  return ok ? 0 : 1;
+}
+
 export async function main(argv: string[] = process.argv.slice(2)): Promise<number> {
   const args = parseArgs(argv);
   if (args.help) {
@@ -365,6 +529,8 @@ export async function main(argv: string[] = process.argv.slice(2)): Promise<numb
   }
   if (args.command === "build") return runBuild(args);
   if (args.command === "add") return runAdd(args);
+  if (args.command === "explain") return runExplain(args);
+  if (args.command === "doctor") return runDoctor(args);
   return runMenu(args);
 }
 

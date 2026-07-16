@@ -9,6 +9,9 @@ Directional, not a promise of dates. Vote and shape it in
 - ✅ Auth + waitlist + CRM + email-automation engine
 - ✅ Menu-driven builder CLI + registry
 - ✅ Local-AI generation engine + `tsc·lint·test·build` verify/repair harness
+- ✅ `studio add <feature>` — incrementally add a feature to an existing generated app
+- ✅ Plan inspection & validation — `studio explain` (human + `--json`) and `studio doctor`
+  (registry + config health, CI-friendly, non-zero on problems)
 - 🔄 Premium tier: framer-motion animated components + monetizable feature blocks + landing templates
 
 ## Next
@@ -16,11 +19,13 @@ Directional, not a promise of dates. Vote and shape it in
 - **More app templates** — internal-tool, community/forum, LMS, booking
 - **Cloud-accelerator opt-in** — seamless Claude/OpenAI fallback for hard units (off by default)
 - **Component preview gallery** — a local Storybook-style browser for everything generated
-- **`studio add <feature>`** — incrementally add a feature to an existing generated app
+- **Plan diffing** — `explain --json` output is stable and diff-friendly; a `studio diff`
+  that shows what a blueprint change adds/removes before you build
 - **i18n + a11y audit pass** baked into the harness
 
 ## Later
-- Plugin API for third-party integration adapters and component packs
+- Plugin API for third-party integration adapters and component packs — the stable
+  `--json` plan projection is the first step toward a machine-consumable surface
 - Multi-framework targets (SvelteKit / Remix substrates)
 - Team mode: shared blueprints + design tokens across a repo
 - Self-hosted model recommendations + one-command model setup

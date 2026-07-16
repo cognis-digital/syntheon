@@ -23,6 +23,7 @@ import { INTEGRATIONS, getIntegration } from "./integrations.js";
 export * from "./features.js";
 export * from "./components.js";
 export * from "./integrations.js";
+export * from "./analyze.js";
 
 /**
  * Transitively collect all feature ids implied by a selection: the selected

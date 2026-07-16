@@ -63,6 +63,19 @@ npm run dev         # your app is running at http://localhost:3000
 engine then builds each piece and verifies it before accepting it. Prefer to skip the menu?
 `npm run studio -- --yes` uses sensible defaults.
 
+**Inspect before you build.** Two read-only commands let you (and your CI) see and validate a plan
+without generating anything:
+
+```bash
+npx tsx studio/cli.ts explain --yes           # units, integrations, env, dependency depth
+npx tsx studio/cli.ts explain --yes --json    # the full plan as machine-readable JSON
+npx tsx studio/cli.ts doctor                  # registry integrity + config validity (CI-friendly)
+```
+
+`explain --json` emits a stable, diff-friendly plan (blueprint · ordered units · integrations · env ·
+analysis). See [docs/CLI.md](./docs/CLI.md) for the schema and [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md)
+for how the pieces fit together.
+
 ### One-command setup (all platforms)
 
 **Prerequisite:** Node ≥ 20. Optional: [Ollama](https://ollama.com) for local generation.
