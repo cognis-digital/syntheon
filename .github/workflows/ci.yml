@@ -11,13 +11,17 @@ concurrency:
 
 jobs:
   verify:
-    name: typecheck · lint · test · build
+    name: node ${{ matrix.node }} · typecheck · lint · test
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ matrix.node }}
           cache: npm
       - name: Install
         run: npm install --no-audit --no-fund
@@ -27,7 +31,14 @@ jobs:
         run: npm run lint
       - name: Test
         run: npm test
+      - name: CLI smoke (read-only, no model required)
+        run: |
+          npx tsx studio/cli.ts doctor --yes --json
+          npx tsx studio/cli.ts explain --yes --json > /dev/null
+          npx tsx studio/cli.ts build --yes --dry-run --json > /dev/null
+      # A full next build is slow; run it once on the primary Node version.
       - name: Build
+        if: matrix.node == 20
         run: npm run build
         env:
           # Integration keys are optional; adapters must degrade gracefully when unset.

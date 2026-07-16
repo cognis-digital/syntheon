@@ -73,16 +73,79 @@ repair fall back to their curated template and are flagged for review, so the tr
 never stays red. When the engine isn't reachable (e.g. Ollama is down), `add`
 falls back to a dry-run plan.
 
+### `explain`
+
+Resolves a blueprint into a plan and **summarizes it** — features, unit counts by
+kind, integrations (split into bring-your-own-key vs. free/local), required env
+vars, and the dependency depth of the generation order. Read-only: it never writes
+or generates anything, so it is safe to run anywhere, including CI.
+
+```bash
+npx tsx studio/cli.ts explain --yes                    # explain the SaaS defaults
+npx tsx studio/cli.ts explain --config app.json        # explain a saved blueprint
+npx tsx studio/cli.ts explain --config app.json --json # machine-readable plan
+```
+
+With `--json`, `explain` prints the full serialized plan — blueprint, ordered
+units (with in-plan `dependsOn` edges), enriched integrations, env vars, and the
+analysis block — as stable, pretty-printed JSON to stdout. This is the documented
+surface for tooling that wants to inspect or diff a plan without running a build.
+
+### `doctor`
+
+Runs health checks and reports problems, exiting non-zero if any are found (so it
+works as a CI guard):
+
+- **Registry integrity** — no feature references an unknown component, integration,
+  or required feature, and every feature contributes at least one unit.
+- **Config validity** — when a `syntheon.config.json` (or `--config`) is present,
+  it parses against the schema *and* resolves to a plan. A missing config is not a
+  failure (it is simply "not checked").
+
+```bash
+npx tsx studio/cli.ts doctor                 # check registry + ./syntheon.config.json
+npx tsx studio/cli.ts doctor --config app.json
+npx tsx studio/cli.ts doctor --json          # structured report for CI
+```
+
 ## Options
 
 | Option | Applies to | Meaning |
 |---|---|---|
-| `-y`, `--yes` | menu, build | Non-interactive; batteries-included SaaS defaults |
-| `-c`, `--config <path>` | build, add | Load an existing blueprint JSON |
+| `-y`, `--yes` | menu, build, explain, doctor | Non-interactive; batteries-included SaaS defaults |
+| `-c`, `--config <path>` | build, add, explain, doctor | Load an existing blueprint JSON |
 | `-o`, `--out <path>` | menu | Output config path (default `syntheon.config.json`) |
 | `--dry-run` | build, add | Print the resolved plan, generate nothing |
+| `--json` | explain, doctor, build/add `--dry-run` | Emit machine-readable JSON |
 | `--list` | add | List available feature ids and exit |
 | `-h`, `--help` | all | Show help |
+
+### The `--json` plan schema
+
+`explain --json` (and `build`/`add --dry-run --json`) emit an object with this shape:
+
+```jsonc
+{
+  "blueprint": { "version": 1, "name": "...", "projectType": "saas", "features": [...], "theme": {...} },
+  "units": [
+    { "id": "app/layout.tsx", "path": "app/layout.tsx", "kind": "route",
+      "featureId": "core-app-shell", "order": 4, "dependsOn": ["app/globals.css"] }
+  ],
+  "env": ["STRIPE_SECRET_KEY", "..."],
+  "integrations": [
+    { "id": "stripe", "label": "Stripe", "paid": true, "env": ["STRIPE_SECRET_KEY", "..."] }
+  ],
+  "analysis": {
+    "name": "...", "projectType": "saas",
+    "featureCount": 10, "unitCount": 47,
+    "unitsByKind": { "config": 1, "component": 26, "module": 2, "integration": 4, "api": 6, "route": 8, "test": 0 },
+    "integrationCount": 5, "paidIntegrations": ["clerk", "stripe", "..."], "freeIntegrations": [],
+    "envCount": 7, "dependencyDepth": 4, "rootCount": 19, "leafCount": 27
+  }
+}
+```
+
+Fields and ordering are deterministic, so two runs of the same blueprint diff cleanly.
 
 ## Exit codes
 
